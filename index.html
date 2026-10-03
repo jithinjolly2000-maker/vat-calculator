@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EU VAT Calculator</title>
+<style>
+  :root{--paper:#f6f8fa;--panel:#fff;--ink:#15202b;--muted:#55616e;--dim:#8a94a0;--line:#e3e8ee;
+    --accent:#13395e;--accent-soft:#13395e12;--good:#17854a;--shadow:0 1px 2px rgba(20,25,30,.04),0 6px 20px rgba(20,25,30,.06);}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.45;font-size:14px}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 22px 60px}
+  header.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:2px solid var(--accent);padding-bottom:15px}
+  .brand h1{font-size:22px;font-weight:700}.brand .sub{color:var(--muted);font-size:13px;margin-top:4px;max-width:60ch}
+  .by{text-align:right;font-size:12px;color:var(--muted)}.by a{color:var(--accent);text-decoration:none}
+  .note{background:var(--accent-soft);border:1px solid var(--line);border-left:3px solid var(--accent);padding:10px 14px;border-radius:6px;font-size:12.5px;color:var(--muted);margin:18px 0 22px}
+  .note b{color:var(--ink)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:20px;margin-bottom:18px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .fld input,.fld select{font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-top:3px}
+  .seg button{font:inherit;font-size:13.5px;font-weight:600;padding:9px 16px;border:none;background:var(--paper);color:var(--muted);cursor:pointer}
+  .seg button+button{border-left:1px solid var(--line)}.seg button.active{background:var(--accent);color:#fff}
+  .rate-info{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .result{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:4px}
+  @media(max-width:640px){.result{grid-template-columns:1fr}}
+  .rc{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:16px 17px;box-shadow:var(--shadow);text-align:center}
+  .rc.big{border-top:3px solid var(--accent)}
+  .rc .l{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  .rc .v{font-size:26px;font-weight:800;margin-top:5px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .rc .cur{font-size:15px;color:var(--muted);font-weight:600}
+  h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);margin:20px 0 11px}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--panel);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  th,td{padding:9px 14px;border-bottom:1px solid var(--line);text-align:left}
+  th{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);font-weight:700}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:none}
+  footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--dim);text-align:center}
+  footer a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><h1>EU VAT Calculator</h1>
+      <div class="sub">Add or remove VAT at the correct rate for any EU country (plus UK). Standard, reduced and zero rates, with the net / VAT / gross breakdown.</div></div>
+    <div class="by">Built by <b>Jithin J</b><br><a href="https://github.com/jithinjolly2000-maker" target="_blank" rel="noopener">github.com/jithinjolly2000-maker</a></div>
+  </header>
+
+  <div class="note">ℹ️ <b>Rates included are standard published VAT rates</b> for general reference. VAT rules change and have many product-specific exceptions — for compliance-critical filings, always confirm against the official tax authority. Nothing is uploaded; all calculation is in your browser.</div>
+
+  <div class="card">
+    <div class="grid">
+      <div class="fld"><label>Amount</label><input id="amount" type="number" min="0" step="0.01" value="1000" inputmode="decimal"></div>
+      <div class="fld"><label>Country</label><select id="country"></select></div>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div class="fld"><label>Rate</label><select id="rate"></select><div class="rate-info" id="rateInfo"></div></div>
+      <div class="fld"><label>Direction</label>
+        <div class="seg" id="dir">
+          <button data-d="add" class="active">Add VAT (net → gross)</button>
+          <button data-d="remove">Remove VAT (gross → net)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <h2>Rate reference</h2>
+  <table id="refTable"><thead><tr><th>Country</th><th class="num">Standard</th><th class="num">Reduced</th></tr></thead><tbody id="refBody"></tbody></table>
+
+  <footer>Static tool · vanilla HTML/CSS/JS · in-browser · GitHub Pages · <a href="https://github.com/jithinjolly2000-maker/vat-calculator" target="_blank" rel="noopener">source</a></footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  // Standard published VAT rates (standard + common reduced). For reference; verify for compliance use.
+  var RATES=[
+    {c:"Austria",code:"AT",std:20,red:[13,10]},
+    {c:"Belgium",code:"BE",std:21,red:[12,6]},
+    {c:"Bulgaria",code:"BG",std:20,red:[9]},
+    {c:"Croatia",code:"HR",std:25,red:[13,5]},
+    {c:"Cyprus",code:"CY",std:19,red:[9,5]},
+    {c:"Czechia",code:"CZ",std:21,red:[12]},
+    {c:"Denmark",code:"DK",std:25,red:[]},
+    {c:"Estonia",code:"EE",std:22,red:[9]},
+    {c:"Finland",code:"FI",std:25.5,red:[14,10]},
+    {c:"France",code:"FR",std:20,red:[10,5.5,2.1]},
+    {c:"Germany",code:"DE",std:19,red:[7]},
+    {c:"Greece",code:"GR",std:24,red:[13,6]},
+    {c:"Hungary",code:"HU",std:27,red:[18,5]},
+    {c:"Ireland",code:"IE",std:23,red:[13.5,9,4.8]},
+    {c:"Italy",code:"IT",std:22,red:[10,5,4]},
+    {c:"Latvia",code:"LV",std:21,red:[12,5]},
+    {c:"Lithuania",code:"LT",std:21,red:[9,5]},
+    {c:"Luxembourg",code:"LU",std:17,red:[14,8,3]},
+    {c:"Malta",code:"MT",std:18,red:[7,5]},
+    {c:"Netherlands",code:"NL",std:21,red:[9]},
+    {c:"Poland",code:"PL",std:23,red:[8,5]},
+    {c:"Portugal",code:"PT",std:23,red:[13,6]},
+    {c:"Romania",code:"RO",std:19,red:[9,5]},
+    {c:"Slovakia",code:"SK",std:23,red:[19,10,5]},
+    {c:"Slovenia",code:"SI",std:22,red:[9.5,5]},
+    {c:"Spain",code:"ES",std:21,red:[10,4]},
+    {c:"Sweden",code:"SE",std:25,red:[12,6]},
+    {c:"United Kingdom",code:"GB",std:20,red:[5]}
+  ];
+
+  var countrySel=document.getElementById("country"),rateSel=document.getElementById("rate"),dir="add";
+  countrySel.innerHTML=RATES.map(function(r,i){return '<option value="'+i+'"'+(r.code==="DE"?' selected':'')+'>'+r.c+' ('+r.code+')</option>';}).join("");
+
+  function fillRates(){
+    var r=RATES[+countrySel.value];
+    var opts=[{v:r.std,l:"Standard — "+r.std+"%"}].concat(r.red.map(function(x){return {v:x,l:"Reduced — "+x+"%"};}));
+    opts.push({v:0,l:"Zero — 0%"});
+    rateSel.innerHTML=opts.map(function(o){return '<option value="'+o.v+'">'+o.l+'</option>';}).join("");
+    document.getElementById("rateInfo").textContent=r.c+" standard rate is "+r.std+"%.";
+    calc();
+  }
+
+  function money(n){ return Number(n.toFixed(2)).toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  function calc(){
+    var amt=parseFloat(document.getElementById("amount").value)||0;
+    var rate=parseFloat(rateSel.value)||0;
+    var net,vat,gross;
+    if(dir==="add"){ net=amt; vat=amt*rate/100; gross=net+vat; }
+    else { gross=amt; net=amt/(1+rate/100); vat=gross-net; }
+    document.getElementById("result").innerHTML=
+      rc("Net (excl. VAT)",net,false)+
+      rc("VAT @ "+rate+"%",vat,true)+
+      rc("Gross (incl. VAT)",gross,false);
+  }
+  function rc(l,v,big){ return '<div class="rc'+(big?' big':'')+'"><div class="l">'+l+'</div><div class="v">'+money(v)+' <span class="cur"></span></div></div>'; }
+
+  document.getElementById("dir").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
+    Array.prototype.forEach.call(this.children,function(x){x.classList.remove("active");});b.classList.add("active");dir=b.getAttribute("data-d");calc();});
+  countrySel.addEventListener("change",fillRates);
+  rateSel.addEventListener("change",calc);
+  document.getElementById("amount").addEventListener("input",calc);
+
+  // reference table
+  document.getElementById("refBody").innerHTML=RATES.map(function(r){
+    return '<tr><td>'+r.c+' ('+r.code+')</td><td class="num">'+r.std+'%</td><td class="num">'+(r.red.length?r.red.map(function(x){return x+'%';}).join(' · '):'—')+'</td></tr>';
+  }).join("");
+
+  fillRates();
+})();
+</script>
+</body>
+</html>
